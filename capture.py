@@ -9,7 +9,7 @@ image_x, image_y = 64, 64
 # keys
 ESC = 27
 CAPTURE = 32
-dir_img_training = './personal/clean/training/'
+dir_img_training = './personal/clean/train/'
 dir_img_test = './personal/clean/test/'
 
 QTD_TRAIN = 150
