@@ -4,16 +4,16 @@ import numpy as np
 import os
 
 # img size
-image_x, image_y = 64, 64
+image_x, image_y = 75, 75
 
 # keys
 ESC = 27
 CAPTURE = 32
-dir_img_training = './personal/clean/train/'
-dir_img_test = './personal/clean/test/'
+dir_img_training = './personal/clean/75x75/train/'
+dir_img_test = './personal/clean/75x75/test/'
 
-QTD_TRAIN = 150
-QTD_TEST = 50
+QTD_TRAIN = 300
+QTD_TEST = 200
 
 
 def create_path(path):
