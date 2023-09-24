@@ -5,7 +5,7 @@ from tensorflow import keras
 import keras.preprocessing.image as kImage
 
 # Constants
-MODEL_INDEX = 1
+MODEL_INDEX = 2
 MODEL_TYPE_INDEX = 1
 CLASSES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'L', 'M',
            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y']
@@ -15,8 +15,6 @@ SPACE_KEY = 32
 
 MODEL_NAME = ["ResNet50", "MobileNet", "InceptionV3"][MODEL_INDEX]
 MODEL_TYPE = ["libras", "personal"][MODEL_TYPE_INDEX]
-# Caso haja novos modelos, adicionar abaixo se precisar de um pré-processamento
-HAS_PREPROCESSING = MODEL_NAME in ["ResNet50", "MobileNet", "InceptionV3"]
 
 # Functions
 
@@ -113,6 +111,7 @@ def modelPredict(frame):
     img_array = kImage.img_to_array(img)
     # Realiza o pré-processamento
     img = preprocessFrame(img_array)
+    cv2.imshow("Preprocessed frame", img.astype(np.float32))
     img = cv2.resize(img, crop_size)
     # Realiza a previsão
     predictions = model.predict(np.expand_dims(img, axis=0), verbose=0)
@@ -122,7 +121,7 @@ def modelPredict(frame):
         if predictions[0][x] > maior:
             maior = predictions[0][x]
             class_index = x
-    return [predictions, CLASSES[class_index]]
+    return CLASSES[class_index]
 
 
 def preprocessFrame(image):
@@ -132,9 +131,11 @@ def preprocessFrame(image):
     elif (MODEL_NAME == "ResNet50"):
         frame = keras.applications.resnet50.preprocess_input(image)
         return frame
-    else:
+    elif (MODEL_NAME == "MobileNet"):
         frame = keras.applications.mobilenet.preprocess_input(image)
         return frame
+    else:
+        return image
 
 
 # Code
@@ -157,7 +158,6 @@ if __name__ == "__main__":
             x_min, x_max, y_min, y_max = hand_rec_sizes
             hand_frame = frame[max(y_min, 0):max(
                 y_max, 0), max(x_min, 0):max(x_max, 0)]
-            result = modelPredict(hand_frame)
-            output = result[1]
+            output = modelPredict(hand_frame)
     cap.release()
     cv2.destroyAllWindows()
