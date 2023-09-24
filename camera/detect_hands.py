@@ -5,7 +5,7 @@ from tensorflow import keras
 import keras.preprocessing.image as kImage
 
 # Constants
-MODEL_INDEX = 0
+MODEL_INDEX = 1
 MODEL_TYPE_INDEX = 1
 CLASSES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'L', 'M',
            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y']
@@ -15,6 +15,8 @@ SPACE_KEY = 32
 
 MODEL_NAME = ["ResNet50", "MobileNet", "InceptionV3"][MODEL_INDEX]
 MODEL_TYPE = ["libras", "personal"][MODEL_TYPE_INDEX]
+# Caso haja novos modelos, adicionar abaixo se precisar de um pré-processamento
+HAS_PREPROCESSING = MODEL_NAME in ["ResNet50", "MobileNet", "InceptionV3"]
 
 # Functions
 
@@ -48,6 +50,8 @@ def getKeyPressed():
 
 
 def getHandLandmarks(frame):
+    mphands = mp.solutions.hands
+    hands = mphands.Hands()
     framergb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = hands.process(framergb)
     return result.multi_hand_landmarks
@@ -76,8 +80,14 @@ def drawHandLandmarks(frame):
             y_max += 50
             x_min -= 50
             x_max += 50
-            cv2.rectangle(frame, (x_min, y_min),
-                          (x_max, y_max), (0, 255, 0), 2)
+            rect_img = cv2.rectangle(frame, (x_min, y_min),
+                                     (x_max, y_max), (36, 255, 12), 2)
+            (t_w, t_h), _ = cv2.getTextSize(
+                output, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2)
+            cv2.rectangle(rect_img, (x_min, y_min - (t_h + 10)),
+                          (x_min + (t_w + 5), y_min), (36, 255, 12), -1)
+            cv2.putText(rect_img, output, (x_min, y_min - 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
             return x_min, x_max, y_min, y_max
 
 
@@ -101,11 +111,12 @@ def modelPredict(frame):
     img_name = saveImage(frame, input_size)
     img = kImage.load_img(img_name, target_size=input_size)
     img_array = kImage.img_to_array(img)
-    preprocessed_img = preprocessFrame(img_array)
-    cv2.imshow("Pre-processed IMG", preprocessed_img.astype(np.uint8))
-    preprocessed_img = cv2.resize(preprocessed_img, crop_size)
-    predictions = model.predict(np.expand_dims(
-        preprocessed_img, axis=0), verbose=0)
+    # Realiza o pré-processamento
+    img = preprocessFrame(img_array)
+    img = cv2.resize(img, crop_size)
+    # Realiza a previsão
+    predictions = model.predict(np.expand_dims(img, axis=0), verbose=0)
+    # Pega o resultado de maior confiança
     maior, class_index = -1, -1
     for x in range(len(CLASSES)):
         if predictions[0][x] > maior:
@@ -130,8 +141,7 @@ def preprocessFrame(image):
 model = keras.models.load_model(getModelPath())
 cap = cv2.VideoCapture(CAMERA_INDEX)
 
-mphands = mp.solutions.hands
-hands = mphands.Hands()
+output = ""
 
 if __name__ == "__main__":
     while True:
@@ -147,10 +157,7 @@ if __name__ == "__main__":
             x_min, x_max, y_min, y_max = hand_rec_sizes
             hand_frame = frame[max(y_min, 0):max(
                 y_max, 0), max(x_min, 0):max(x_max, 0)]
-            cv2.imshow("ROI", hand_frame)
             result = modelPredict(hand_frame)
-            print(result[1])
-        else:
-            print("Não foi encontrada uma mão no frame")
+            output = result[1]
     cap.release()
     cv2.destroyAllWindows()
