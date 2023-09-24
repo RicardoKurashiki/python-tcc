@@ -82,9 +82,8 @@ def drawHandLandmarks(frame):
 
 
 def saveImage(frame, input_size):
-    imgrgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     img_name = "./temp/img.png"
-    save_img = cv2.resize(imgrgb, input_size)
+    save_img = cv2.resize(frame, input_size)
     cv2.imwrite(img_name, save_img)
     return img_name
 
@@ -103,6 +102,7 @@ def modelPredict(frame):
     img = kImage.load_img(img_name, target_size=input_size)
     img_array = kImage.img_to_array(img)
     preprocessed_img = preprocessFrame(img_array)
+    cv2.imshow("Pre-processed IMG", preprocessed_img.astype(np.uint8))
     preprocessed_img = cv2.resize(preprocessed_img, crop_size)
     predictions = model.predict(np.expand_dims(
         preprocessed_img, axis=0), verbose=0)
@@ -145,9 +145,8 @@ if __name__ == "__main__":
         has_hand = getHandLandmarks(frame)
         if (has_hand):
             x_min, x_max, y_min, y_max = hand_rec_sizes
-            if (sum(n < 0 for n in [x_min, x_max, y_min, y_max])):
-                continue
-            hand_frame = frame[y_min:y_max, x_min:x_max]
+            hand_frame = frame[max(y_min, 0):max(
+                y_max, 0), max(x_min, 0):max(x_max, 0)]
             cv2.imshow("ROI", hand_frame)
             result = modelPredict(hand_frame)
             print(result[1])
