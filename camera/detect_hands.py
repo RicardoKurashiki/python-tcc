@@ -1,15 +1,15 @@
 import cv2
+import keras.preprocessing.image as kImage
 import mediapipe as mp
 import numpy as np
 from tensorflow import keras
-import keras.preprocessing.image as kImage
 
 # Constants
-MODEL_INDEX = 2
+MODEL_INDEX = 1
 MODEL_TYPE_INDEX = 1
 CLASSES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'L', 'M',
            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y']
-CAMERA_INDEX = 0
+CAMERA_INDEX = 1
 ESC_KEY = 27
 SPACE_KEY = 32
 
@@ -26,14 +26,14 @@ def getModelPath():
         elif (MODEL_NAME == "MobileNet"):
             return "../training/MobileNet/libras/mobilenet_model.h5"
         else:
-            return "../training/InceptionV3/libras/inception_v3_model.h5"
+            return "../training/InceptionV3/libras/inceptionv3_model.h5"
     else:
         if (MODEL_NAME == "ResNet50"):
             return "../training/ResNet50/personal/resnet50_model.h5"
         elif (MODEL_NAME == "MobileNet"):
             return "../training/MobileNet/personal/mobilenet_model.h5"
         else:
-            return "../training/InceptionV3/personal/inception_v3_model.h5"
+            return "../training/InceptionV3/personal/inceptionv3_model.h5"
 
 
 def getFrame():
@@ -48,8 +48,6 @@ def getKeyPressed():
 
 
 def getHandLandmarks(frame):
-    mphands = mp.solutions.hands
-    hands = mphands.Hands()
     framergb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = hands.process(framergb)
     return result.multi_hand_landmarks
@@ -111,10 +109,11 @@ def modelPredict(frame):
     img_array = kImage.img_to_array(img)
     # Realiza o pré-processamento
     img = preprocessFrame(img_array)
-    cv2.imshow("Preprocessed frame", img.astype(np.float32))
+    # cv2.imshow("Preprocessed frame", img.astype(np.float32))
     img = cv2.resize(img, crop_size)
+    img = np.expand_dims(img, axis=0)
     # Realiza a previsão
-    predictions = model.predict(np.expand_dims(img, axis=0), verbose=0)
+    predictions = model.predict(img, verbose=0)
     # Pega o resultado de maior confiança
     maior, class_index = -1, -1
     for x in range(len(CLASSES)):
@@ -139,12 +138,13 @@ def preprocessFrame(image):
 
 
 # Code
-model = keras.models.load_model(getModelPath())
-cap = cv2.VideoCapture(CAMERA_INDEX)
-
-output = ""
 
 if __name__ == "__main__":
+    model = keras.models.load_model(getModelPath())
+    cap = cv2.VideoCapture(CAMERA_INDEX)
+    mphands = mp.solutions.hands
+    hands = mphands.Hands()
+    output = ""
     while True:
         frame = getFrame()
         key = getKeyPressed()
