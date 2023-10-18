@@ -5,11 +5,11 @@ import numpy as np
 from tensorflow import keras
 
 # Constants
-MODEL_INDEX = 1
+MODEL_INDEX = 2
 MODEL_TYPE_INDEX = 1
 CLASSES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'L', 'M',
            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y']
-CAMERA_INDEX = 1
+CAMERA_INDEX = 0
 ESC_KEY = 27
 SPACE_KEY = 32
 
@@ -22,18 +22,18 @@ MODEL_TYPE = ["libras", "personal"][MODEL_TYPE_INDEX]
 def getModelPath():
     if (MODEL_TYPE == "libras"):
         if (MODEL_NAME == "ResNet50"):
-            return "../training/ResNet50/libras/resnet50_model.h5"
+            return "./models/resnet50_model.h5"
         elif (MODEL_NAME == "MobileNet"):
-            return "../training/MobileNet/libras/mobilenet_model.h5"
+            return "./models/mobilenet_model.h5"
         else:
-            return "../training/InceptionV3/libras/inceptionv3_model.h5"
+            return "./models/inceptionv3_model.h5"
     else:
         if (MODEL_NAME == "ResNet50"):
-            return "../training/ResNet50/personal/resnet50_model.h5"
+            return "./models/ft_resnet50_model.h5"
         elif (MODEL_NAME == "MobileNet"):
-            return "../training/MobileNet/personal/mobilenet_model.h5"
+            return "./models/ft_mobilenet_model.h5"
         else:
-            return "../training/InceptionV3/personal/inceptionv3_model.h5"
+            return "./models/ft_inceptionv3_model.h5"
 
 
 def getFrame():
