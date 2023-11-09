@@ -1,4 +1,4 @@
-Validation loss: 0.2956109941005707
+Validation loss: 0.2956109344959259
 Validation accuracy: 0.9413978457450867
 Test loss: 0.3160189092159271
 Test accuracy: 0.9330769181251526
